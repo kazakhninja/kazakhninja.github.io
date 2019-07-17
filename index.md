@@ -1,8 +1,8 @@
-# Воруем ЭЦП, используя Man-In-The-Disk / Кейлоггер в блокноте
+# Воруем ЭЦП, используя Man-In-The-Disk
 
 ## Intro
 
-Казахстанские мобильные приложения [mEGOV](https://play.google.com/store/apps/details?id=kz.nitec.egov.mgov) и [ЕНПФ](https://play.google.com/store/apps/details?id=kz.enpf.mobile) используют ЭЦП, как один из способов авторизации. Чтобы авторизоваться этим способом, вам необходимо перенести файл с ЭЦП на телефон. Такой метод авторизации уязвим перед атакой Man-In-The-Disk (о ней в подробностях ниже). Чтобы стать жертвой атаки, вам достаточно установить любое ваше любимое приложение, которые было скрытно модифицировано злоумышленником. Я наглядно покажу, как это может быть сделано. Так же я расскажу, как установив безобидный блокнот, вы можете получить кейлоггер. Для начала выясним, как такие приложения могут попасть к пользователю.
+Казахстанские мобильные приложения [mEGOV](https://play.google.com/store/apps/details?id=kz.nitec.egov.mgov) и [ЕНПФ](https://play.google.com/store/apps/details?id=kz.enpf.mobile) используют ЭЦП, как один из способов авторизации. Чтобы авторизоваться этим способом, вам необходимо перенести файл с ЭЦП на телефон. Такой метод авторизации уязвим перед атакой Man-In-The-Disk (о ней в подробностях ниже). Чтобы стать жертвой атаки, вам достаточно установить любое ваше любимое приложение, которые было скрытно модифицировано злоумышленником. Я наглядно покажу, как это может быть сделано. 
 
 ## Как вредоносные приложения попадают на телефон
  
@@ -496,40 +496,3 @@ Virustotal нам ничего не покажет, так как ничего "
 
 ![](/assets/images/ninja_fruit_virustotal.png)
 
-Видео, с демонстрацией конечной работы:
-
-https://youtu.be/e5w5taMY8MA
-
-https://youtu.be/iBCX_A5FBVU
-
-## Добавляем кейлоггер в блокнот
-
-В этой части, я покажу, как злоумышленник может внедрить кейллогер в простой [блокнот](https://play.google.com/store/apps/details?id=com.socialnmobile.dictapps.notepad.color.note). Отличие от предыдущего варианта будет в том, что внедряться, помимо кода, будет еще и GUI элемент. 
-
-### Keylogger не требующий рута
-
-На данный момент, мне известно два способа создания кейлоггера под андроид
-Скачиваем приложение, декомпилируем. Открываем манифест, находим активити.
-
-```xml
-<activity android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode" 
-	  
-	  android:label="@string/app_name" android:name="com.socialnmobile.colornote.activity.Main" 
-	  
-	  android:taskAffinity="colornote.task.main" android:theme="@style/Theme.NoTitle.Light" 
-	  
-	  android:windowSoftInputMode="adjustPan">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-                <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER"/>
-                <category android:name="android.intent.category.MONKEY"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.action.EDIT"/>
-                <action android:name="android.intent.action.PICK"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.dir/vnd.socialnmobile.colornote.note"/>
-            </intent-filter>
-```
