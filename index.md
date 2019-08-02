@@ -1,16 +1,16 @@
-# Воруем ЭЦП, используя Man-In-The-Disk
+# Steal digital signature using Man-In-The-Disk
 
 ## Intro
 
-Казахстанские мобильные приложения [mEGOV](https://play.google.com/store/apps/details?id=kz.nitec.egov.mgov) и [ЕНПФ](https://play.google.com/store/apps/details?id=kz.enpf.mobile) используют ЭЦП, как один из способов авторизации. Чтобы авторизоваться этим способом, вам необходимо перенести файл с ЭЦП на телефон. Такой метод авторизации уязвим перед атакой Man-In-The-Disk (о ней в подробностях ниже). Чтобы стать жертвой атаки, вам достаточно установить любое ваше любимое приложение, которые было скрытно модифицировано злоумышленником. Я наглядно покажу, как это может быть сделано. 
+Kazakhstan mobile android applications [mEGOV](https://play.google.com/store/apps/details?id=kz.nitec.egov.mgov) and [ENPF](https://play.google.com/store/ apps / details? id = kz.enpf.mobile) use digital signatures as one of the methods of authorization. To log in in this way, you need to transfer the file with digital signature to the phone. This authorization method is vulnerable to a Man-In-The-Disk attack (more about this attack in details below). To become a victim of an attack, you just need to install any of your favorite application, which was secretly modified by an attacker. I will demonstrate how this can be done.
 
-## Как вредоносные приложения попадают на телефон
+## How malicious applications get on the phone
  
-### Локальные маркеты приложений Китая, Ирана и т.д
+### Local application markets of China, Iran, etc.
  
-  Примеры: cafebazaar.ir, android.myapp.com, apkplz.net
+  Examples: cafebazaar.ir, android.myapp.com, apkplz.net
   
-  Данные площадки появились вследствии цензуры и блокировки Google сервисов и/или серверов официальных приложений. Обычно они содержат местные аналоги популярных приложений и их модификации. Такие модификации (как [этот иранский телеграм](https://apkplz.net/app/org.ir.talaeii)) содержат якобы новые, крутые фичи. В чем опасность таких приложений? Вы никогда не знаете, что они на самом деле делают. К тому же, правительства некоторых стран не упускают возможность и публикуют свои модификации, с инструментами для слежения за пользователем. Приложения с правительственной слежкой являются вредоносными по определению. Однажды, я изучал вредоносное приложение ([результат Virustotal](https://www.virustotal.com/gui/file/1e6a821f5de824b91c6676742a521a8dcdd345f25a820befa11e5975fc8c39d3/community), образец [тут](/assets/files/iranian_apk_infected.zip), пароль:infected), которое сканировало телефон на наличие телеграм-клонов:
+  These sites exists due to censorship and blocking of Google services and/or servers. Usually they contain local analogues of popular applications and their modifications. Such modified apps (like [this Iranian telegram](https://apkplz.net/app/org.ir.talaeii)) usually contain new, cool features. What is the danger of such applications? You never know what they actually do. In addition, some governments do not miss the opportunity and publish their modifications, with tools for tracking the user. Government surveillance applications are malicious by definition. One day, I was studying a malicious application ([Virustotal result](https://www.virustotal.com/gui/file/1e6a821f5de824b91c6676742a521a8dcdd345f25a820befa11e5975fc8c39d3/community), sample [here](/assets/files/iranian_apk_infected.zip) (password:"infected") that scanned the phone for telegram clones:
   
   ```
   "com.hanista.mobogram"
@@ -25,44 +25,45 @@
   "com.mehrdad.blacktelegram"
   ```
   
-  Данный список говорит о реальной актуальности и популярности таких приложений. Исследованние данного вредоноса, привело меня к [статье](https://cybershafarat.com/2016/01/20/farsitelegram/), в которой рассказывается о клоне телеграма, которое распостранялось через маркет *Cafebazaar*, Иранским правительством. Цитата оттуда:
+  This list indicates the real relevance and popularity of such applications. Researching this malware has led me to an [article](https://cybershafarat.com/2016/01/20/farsitelegram/), which talks about a telegram clone distributed through the *Cafebazaar* marketplace by the Iranian government. Quote from there:
   
-> This looks to be developed to the specifications of the Iranian government enabling them to track every bit and byte put forward by users of the app.  
+> This looks to be developed to the specifications of the Iranian government enabling them to track every bit and byte put forward by users of the app.
   
-  Сколько клонов телеграма вы видите?: ([Источник](https://apkplz.net/))
+  How many telegram clones do you see?: ([Source](https://apkplz.net/))
   
   ![image](/assets/images/iran_telegrams.png)
   
-  Обычным пользователям защититься от этого практически невозможно, так как другого выбора нет - официальные источники усиленно блокируются, а свои продвигаются. Исследователи и антивирусные компании со всего мира, после выявления зараженных приложений, оперативно сообщают об этом в Google и они удаляются из Play Market, что очевидно, не распостраняется на стороннии маркеты приложений. Так же на них не распостраняется политика Google, относительно допуска размещаемых приложений.
+  It is almost impossible for ordinary users to protect themselves from this, since there is no other choice - official sources are being intensely blocked, and their own are being promoted. Researchers and antivirus companies from around the world, after identifying infected applications, promptly report this to Google and they are removed from the Play Market, which obviously does not apply to third-party application markets. Also, Google’s policy regarding the admission of hosted applications does not apply to them.
   
-  Некоторые из маркетов очень популярны, как например *Tencent My App*, с 260 млн. пользователей в месяц ([Источник](https://www.appinchina.co/market/app-stores/))
+  Some of the markets are very popular, such as *Tencent My App*, with 260 million users per month ([Source](https://www.appinchina.co/market/app-stores/))
   
   ![image](/assets/images/china_app_stores.png)
   
-  Локальные приложения, используемые в рамках одного региона/страны, часто используют одни и те же SDK (набор библиотек) для рекламного трекинга, интеграции соц. сетей и т.д.. Если одна и та же библиотека используется в нескольких приложениях, то с большой вероятностью, некоторые из этих приложений, могут быть установлены у одного пользователя. Такие библиотеки могут использовать возможности разных приложений, в которые они встроены, для кражи данных пользователя, в обход выданных разрешений. Например, одно приложение имеет доступ к получению IMEI, но не имеет доступа к интернету. Встроенная библиотека знает об этом и поэтому считывает IMEI и сохраняет его на SD карте в скрытой папке. Та же библиотека встроенная в другое приложение, у которого есть доступ в интернет, но нету доступа к IMEI, считывает его со скрытой папки и отправляет на свой сервер. Данный способ использовался двумя китайскими компаниями Baidu и Salmonads. Подробнее об этом можете прочитать [тут](https://www.ftc.gov/system/files/documents/public_events/1415032/privacycon2019_serge_egelman.pdf). 
+  Local market's applications used within the same region/country often use the same SDK (set of libraries) for advertising tracking, social netwroks integration, etc. .. If the same library is used in several applications, then with high probability some of these applications can be installed by one particular user. Such libraries can use the capabilities of different applications in which they are built-in to steal user data, bypassing the granted permissions. For example, one application has access to obtain IMEI, but does not have access to the Internet. The built-in library knows about it and therefore reads the IMEI and saves it on the SD card in a hidden folder. The same library is built into another application that has Internet access but no access to IMEI, reads it from a hidden folder and sends it to its server. This method was used by two Chinese companies Baidu and Salmonads. You can read more about this [here](https://www.ftc.gov/system/files/documents/public_events/1415032/privacycon2019_serge_egelman.pdf).
   
-### Фишинг
+### Phishing
 
-Классический фишинг, является основным инструментом международных группировок и [спецслужб разных стран](https://www.theverge.com/2018/1/18/16905464/spyware-lebanon-government-research-dark-caracal-gdgs). Как это часто бывает, берется обычное приложение мессенджер, в него добавляется функционал для слежения, а потом оно массово рассылается, с пометкой "Посмотри, какое крутое приложение для общения". Доставка пользователям может осуществляется через соц. сети, спам Whatsapp/Telegram, встроенная реклама на сайтах и т.д..
+Classic phishing attack is the main method of international groups and [special services of different countries](https://www.theverge.com/2018/1/18/16905464/spyware-lebanon-government-research-dark-caracal-gdgs). As it often happens, attackers take a regular messenger application and add functionality for tracking, then it is massively distributed, with a note "Look, what a new cool messenger!". Delivery to users can be carried out through social networks, spam in Whatsapp/Telegram, built-in ads on web sites, etc.
 
 ![](/assets/images/dark_caracal_phishing.png)
-[Источник, стр 19.](https://info.lookout.com/rs/051-ESQ-475/images/Lookout_Dark-Caracal_srr_20180118_us_v.1.0.pdf)
 
-Фишинговые ссылки, в виде постов в фейсбуке:
+[Source, page 19.](https://info.lookout.com/rs/051-ESQ-475/images/Lookout_Dark-Caracal_srr_20180118_us_v.1.0.pdf)
+
+Phishing links, in the form of posts on Facebook:
 
 ![](/assets/images/dark_caracal_phishing_2.png)
 
-[Источник, стр. 22](https://info.lookout.com/rs/051-ESQ-475/images/Lookout_Dark-Caracal_srr_20180118_us_v.1.0.pdf)
+[Source, page 22](https://info.lookout.com/rs/051-ESQ-475/images/Lookout_Dark-Caracal_srr_20180118_us_v.1.0.pdf)
 
-Всплывающее окно на одном известном сайте
+Pop-up window on web site:
 
 ![img](/assets/images/whatsapp_fishing.png)
 
-[Источник](https://xakep.ru/2017/01/27/mobile-phishing/)
+[Source](https://xakep.ru/2017/01/27/mobile-phishing/)
 
-### Телеграм боты/группы
+### Telegram bots/groups
 
-Пример: @apkdl_bot, t.me/fun_android
+Examples: @apkdl_bot, t.me/fun_android
 
   Существуют телеграм боты, для скачивания apk файлов. Вместо легитимного приложения, вам могут подсунуть вредоносное. Либо заразить запрашиваемое вами приложение "на лету". Работает это так - вы вводите команду боту/в группу, что хотите скачать "Instagram", скрипт на другой стороне скачивает его с Google Play, распаковывает, добавляет вредоносный код, запаковывает обратно и возвращает вам. Как это делается автоматически, я попытаюсь показать на примере в ближайшем будущем.
 
